@@ -1,0 +1,4 @@
+dist/
+if3_game\.egg-info/
+build/
+*.pyc
