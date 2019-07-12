@@ -1,5 +1,6 @@
 import cocos
 import cocos.collision_model
+from cocos.text import Label
 import cocos.euclid
 from pyglet import clock
 from math import *
@@ -37,6 +38,11 @@ class Game(cocos.scene.Scene):
     def add(self, layer):
         super().add(layer)
         self.__layers.append(layer)
+        layer.game = self
+
+    def remove_all_layers(self):
+        for layer in self.__layers:
+            self.remove(layer)
 
 
 class Layer(cocos.layer.Layer):
@@ -46,7 +52,9 @@ class Layer(cocos.layer.Layer):
     def __init__(self):
         super().__init__()
         self.__items = []
+        self.__texts = []
         self.collision_manager = cocos.collision_model.CollisionManagerBruteForce()
+        self.game = None
 
     def on_key_press(self, key, modifiers):
         for item in self.__items:
@@ -70,12 +78,18 @@ class Layer(cocos.layer.Layer):
 
     def add(self, item):
         super().add(item)
-        self.__items.append(item)
+        if isinstance(item, Text):
+            self.__texts.append(item)
+        else:
+            self.__items.append(item)
         item.layer = self
 
     def remove(self, item):
         super().remove(item)
-        self.__items.remove(item)
+        if isinstance(item, Text):
+            self.__texts.remove(item)
+        else: 
+            self.__items.remove(item)
 
 
 class Sprite(cocos.sprite.Sprite):
@@ -96,6 +110,7 @@ class Sprite(cocos.sprite.Sprite):
         self.collision_radius = collision_radius
         self.cshape = cocos.collision_model.CircleShape(
             self.position, collision_radius)
+        self.cshape.center = cocos.euclid.Vector2(*self.position)
         self.__destroy = False
 
     def update(self, dt):
@@ -146,3 +161,35 @@ class AnimatedSprite(Sprite):
 
         animation = pyglet.image.load_animation(animation)
         super().__init__(animation, position=position, scale=scale, anchor=anchor)
+
+
+class Text(Label):
+
+    def __init__(self, text, position=(0,0), anchor=None):
+        self.layer = None
+        if anchor == "center":
+            anchor_x = "center"
+            anchor_y = "center"
+        elif anchor == "left":
+            anchor_x = "left"
+            anchor_y = "center"
+        elif anchor == "right":
+            anchor_x = "right"
+            anchor_y = "center"
+        elif anchor == "bottom":
+            anchor_x = "center"
+            anchor_y = "bottom"
+        elif anchor == "top":
+            anchor_x = "center"
+            anchor_y = "top"
+        elif isinstance(anchor, (list, tuple)):
+            anchor_x = anchor[0]
+            anchor_y = anchor[0]
+        else:
+            anchor_x = "left"
+            anchor_y = "bottom"
+
+        x, y = position
+
+        super().__init__( text=text, x=x, y=y, 
+            anchor_x=anchor_x, anchor_y=anchor_y)
