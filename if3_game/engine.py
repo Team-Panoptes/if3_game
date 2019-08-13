@@ -71,7 +71,7 @@ class Layer(cocos.layer.Layer):
         self.collision_manager.clear() # fast, no leaks even if changed cshapes
         for item in self.__items:
             self.collision_manager.add(item)
-        
+
         for item in self.__items:
             for other in self.collision_manager.iter_colliding(item):
                 item.on_collision(other)
@@ -88,7 +88,7 @@ class Layer(cocos.layer.Layer):
         super().remove(item)
         if isinstance(item, Text):
             self.__texts.remove(item)
-        else: 
+        else:
             self.__items.remove(item)
 
 
@@ -98,20 +98,30 @@ class Sprite(cocos.sprite.Sprite):
                  position=(0, 0),
                  scale=1.,
                  anchor=(0, 0),
-                 collision_radius=None):
+                 collision_shape="rectangle"):
 
         super().__init__(image, position=position, scale=scale, anchor=anchor)
 
         self.layer = None
 
-        if collision_radius is None:
-            collision_radius = max(self.get_rect().size) / 2
+        if isinstance(collision_shape, str):
+            if collision_shape == "rectangle":
+                center = cocos.euclid.Vector2(*self.position)
+                width, height = self.get_rect().size
+                self.cshape= cocos.collision_model.AARectShape(center, width/2, height/2)
+            if collision_shape == "circle":
+                collision_radius = max(self.get_rect().size) / 2
+                self.cshape = cocos.collision_model.CircleShape(
+                    self.position, collision_radius)
+                self.cshape.center = cocos.euclid.Vector2(*self.position)
+        elif isinstance(collision_shape, cocos.collision_model.Cshape):
+            self.cshape = collision_shape
+        else:
+            raise(TypeError(f'collision_shape parameters need to be "rectangle" or "circle" or a cocos.collision_model.Cshape type'))
 
-        self.collision_radius = collision_radius
-        self.cshape = cocos.collision_model.CircleShape(
-            self.position, collision_radius)
-        self.cshape.center = cocos.euclid.Vector2(*self.position)
         self.__destroy = False
+        self.collision_shape = collision_shape
+
 
     def update(self, dt):
         if self.__destroy:
@@ -122,20 +132,36 @@ class Sprite(cocos.sprite.Sprite):
     def on_collision(self, other):
         pass
 
-    def __draw_circle(self, radius, position):
-        if not Game.draw_debug:
-            return
+    def __draw_circle(self):
+        radius = max(self.get_rect().size) / 2
         verts = []
         nbr_points = 32
         for i in range(nbr_points):
             angle = radians(float(i) / nbr_points * 360.0)
-            x = radius * cos(angle) + position[0]
-            y = radius * sin(angle) + position[1]
+            x = radius * cos(angle) + self.cshape.center[0]
+            y = radius * sin(angle) + self.cshape.center[1]
             verts += [x, y]
 
         circle = pyglet.graphics.vertex_list(nbr_points, ('v2f', verts))
         glColor3f(0, 1, 0)
         circle.draw(GL_LINE_LOOP)
+
+    def __draw_rectangle(self):
+        verts = []
+
+        c = self.cshape.center
+        rx = self.cshape.rx
+        ry = self.cshape.ry
+
+        verts +=  c[0] - rx, c[1] + ry
+        verts +=  c[0] + rx, c[1] + ry
+        verts +=  c[0] + rx, c[1] - ry
+        verts +=  c[0] - rx, c[1] - ry
+
+        rectangle = pyglet.graphics.vertex_list(4, ('v2f', verts))
+
+        glColor3f(0, 1, 0)
+        rectangle.draw(GL_LINE_LOOP)
 
     def on_key_press(self, key, modifiers):
         pass
@@ -145,7 +171,11 @@ class Sprite(cocos.sprite.Sprite):
 
     def draw(self):
         super().draw()
-        self.__draw_circle(self.collision_radius, self.cshape.center)
+        if not Game.draw_debug:
+            if self.collision_shape == 'circle':
+                self.__draw_circle()
+            elif self.collision_shape == 'rectangle':
+                self.__draw_rectangle()
 
     def destroy(self):
         self.__destroy = True
@@ -191,5 +221,5 @@ class Text(Label):
 
         x, y = position
 
-        super().__init__( text=text, x=x, y=y, 
+        super().__init__( text=text, x=x, y=y,
             anchor_x=anchor_x, anchor_y=anchor_y)
