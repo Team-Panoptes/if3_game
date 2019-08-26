@@ -171,7 +171,7 @@ class Sprite(cocos.sprite.Sprite):
 
     def draw(self):
         super().draw()
-        if not Game.draw_debug:
+        if Game.draw_debug:
             if self.collision_shape == 'circle':
                 self.__draw_circle()
             elif self.collision_shape == 'rectangle':
