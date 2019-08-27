@@ -70,6 +70,10 @@ class Layer(cocos.layer.Layer):
 
         self.collision_manager.clear() # fast, no leaks even if changed cshapes
         for item in self.__items:
+            try:
+                item.compute_center()
+            except AttributeError:
+                pass
             self.collision_manager.add(item)
 
         for item in self.__items:
@@ -106,14 +110,13 @@ class Sprite(cocos.sprite.Sprite):
 
         if isinstance(collision_shape, str):
             if collision_shape == "rectangle":
-                center = cocos.euclid.Vector2(*self.position)
                 width, height = self.get_rect().size
-                self.cshape= cocos.collision_model.AARectShape(center, width/2, height/2)
-            if collision_shape == "circle":
+                self.cshape= cocos.collision_model.AARectShape(self.position, width/2, height/2)
+
+            elif collision_shape == "circle":
                 collision_radius = max(self.get_rect().size) / 2
                 self.cshape = cocos.collision_model.CircleShape(
                     self.position, collision_radius)
-                self.cshape.center = cocos.euclid.Vector2(*self.position)
         elif isinstance(collision_shape, cocos.collision_model.Cshape):
             self.cshape = collision_shape
         else:
@@ -122,12 +125,16 @@ class Sprite(cocos.sprite.Sprite):
         self.__destroy = False
         self.collision_shape = collision_shape
 
+    def compute_center(self):
+        center = self.position[0] - self.image_anchor[0], self.position[1] - self.image_anchor[1]
+        width, height = self.get_rect().size
+        center = center[0] + width/2, center[1] + height/2
+
+        self.cshape.center = cocos.euclid.Vector2(*center)
 
     def update(self, dt):
         if self.__destroy:
             self.layer.remove(self)
-
-        self.cshape.center = cocos.euclid.Vector2(*self.position)
 
     def on_collision(self, other):
         pass
@@ -150,6 +157,7 @@ class Sprite(cocos.sprite.Sprite):
         verts = []
 
         c = self.cshape.center
+
         rx = self.cshape.rx
         ry = self.cshape.ry
 
