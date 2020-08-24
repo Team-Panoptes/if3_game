@@ -9,5 +9,5 @@ setuptools.setup(
     author_email="info@panopticgame.com",
     description="small engine to learn game design with python",
     packages=setuptools.find_packages(),
-    install_requires=['cocos2d', 'pyglet==1.3.1']
+    install_requires=['cocos2d>=1.5.7']
 )
