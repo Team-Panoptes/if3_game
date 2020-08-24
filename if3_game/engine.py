@@ -5,6 +5,8 @@ import cocos.euclid
 from pyglet import clock
 from math import *
 from pyglet.gl import *
+import pyglet
+from pathlib import Path
 
 
 def init(resolution=[], title='Game by Game02'):
@@ -44,6 +46,7 @@ class Game(cocos.scene.Scene):
         while self.__layers:
             layer = self.__layers.pop(0)
             self.remove(layer)
+
 
 class Layer(cocos.layer.Layer):
 
@@ -103,6 +106,9 @@ class Sprite(cocos.sprite.Sprite):
                  scale=1.,
                  anchor=(0, 0),
                  collision_shape="rectangle"):
+
+        if image[-4:] == '.gif':
+            image = pyglet.resource.animation(image)
 
         super().__init__(image, position=position, scale=scale, anchor=anchor)
 
@@ -188,6 +194,7 @@ class Sprite(cocos.sprite.Sprite):
     def destroy(self):
         self.__destroy = True
 
+
 class AnimatedSprite(Sprite):
 
     def __init__(self,
@@ -197,7 +204,6 @@ class AnimatedSprite(Sprite):
             anchor=(0, 0),
             collision_radius=None):
 
-        animation = pyglet.image.load_animation(animation)
         super().__init__(animation, position=position, scale=scale, anchor=anchor)
 
 
