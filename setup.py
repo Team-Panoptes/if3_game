@@ -9,5 +9,5 @@ setuptools.setup(
     author_email="info@panopticgame.com",
     description="Small engine to learn game design with Python",
     packages=setuptools.find_packages(),
-    install_requires=['cocos2d>=1.5.7']
+    install_requires=['cocos2d>=0.6.8']
 )
