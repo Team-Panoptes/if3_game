@@ -209,7 +209,7 @@ class AnimatedSprite(Sprite):
 
 class Text(Label):
 
-    def __init__(self, text, position=(0,0), anchor=None):
+    def __init__(self, text, position=(0,0), font_size=12, color=(255, 255, 255, 255), anchor=None):
         self.layer = None
         if anchor == "center":
             anchor_x = "center"
@@ -228,12 +228,24 @@ class Text(Label):
             anchor_y = "top"
         elif isinstance(anchor, (list, tuple)):
             anchor_x = anchor[0]
-            anchor_y = anchor[0]
+            anchor_y = anchor[1]
         else:
             anchor_x = "left"
             anchor_y = "bottom"
 
         x, y = position
 
+        if len(color) == 3:
+            color = color + (255,)
+
         super().__init__( text=text, x=x, y=y,
-            anchor_x=anchor_x, anchor_y=anchor_y)
+            anchor_x=anchor_x, anchor_y=anchor_y, font_size=font_size, color=color)
+
+    @property
+    def text(self):
+        return self.element.text
+    
+    @text.setter
+    def text(self, value):
+        self.element.text = value
+
