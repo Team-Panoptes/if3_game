@@ -191,6 +191,9 @@ class Sprite(cocos.sprite.Sprite):
             elif self.collision_shape == 'rectangle':
                 self.__draw_rectangle()
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST) 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+
     def destroy(self):
         self.__destroy = True
 
@@ -209,7 +212,9 @@ class AnimatedSprite(Sprite):
 
 class Text(Label):
 
-    def __init__(self, text, position=(0,0), font_size=12, color=(255, 255, 255, 255), anchor=None):
+    def __init__(
+            self, text, position=(0,0), font_size=12, font_name=None,
+            color=(255, 255, 255, 255), anchor=None):
         self.layer = None
         if anchor == "center":
             anchor_x = "center"
@@ -239,7 +244,8 @@ class Text(Label):
             color = color + (255,)
 
         super().__init__( text=text, x=x, y=y,
-            anchor_x=anchor_x, anchor_y=anchor_y, font_size=font_size, color=color)
+            anchor_x=anchor_x, anchor_y=anchor_y, font_size=font_size,
+            font_name=font_name, color=color)
 
     @property
     def text(self):
