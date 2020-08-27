@@ -104,6 +104,11 @@ class Layer(cocos.layer.Layer):
         else:
             self.__items.remove(item)
 
+    def remove_all_items(self):
+        for item in self.__items:
+            self.remove(item)
+
+
 
 class Sprite(cocos.sprite.Sprite):
     def __init__(self,
