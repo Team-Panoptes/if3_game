@@ -44,8 +44,14 @@ class Game(cocos.scene.Scene):
 
     def remove_all_layers(self):
         while self.__layers:
-            layer = self.__layers.pop(0)
-            self.remove(layer)
+            self.remove(self.__layers[0])
+
+    def remove(self, layer):
+        try:
+            super().remove(layer)
+        except:
+            pass
+        self.__layers.remove(layer)
 
 
 class Layer(cocos.layer.Layer):
