@@ -142,6 +142,13 @@ class Sprite(cocos.sprite.Sprite):
         self.__destroy = False
         self.collision_shape = collision_shape
 
+    def change_image(self, image):
+        
+        if isinstance(image, str):
+            self.image = pyglet.resource.image(image)
+        else:
+            self.image = image
+
     def compute_center(self):
         center = self.position[0] - self.image_anchor[0], self.position[1] - self.image_anchor[1]
         width, height = self.get_rect().size
