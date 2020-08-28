@@ -5,6 +5,8 @@ import cocos.euclid
 from pyglet import clock
 from math import *
 from pyglet.gl import *
+import pyglet
+from pathlib import Path
 
 
 def init(resolution=[], title='Game by Game02'):
@@ -42,8 +44,15 @@ class Game(cocos.scene.Scene):
 
     def remove_all_layers(self):
         while self.__layers:
-            layer = self.__layers.pop(0)
-            self.remove(layer)
+            self.remove(self.__layers[0])
+
+    def remove(self, layer):
+        try:
+            super().remove(layer)
+        except:
+            pass
+        self.__layers.remove(layer)
+
 
 class Layer(cocos.layer.Layer):
 
@@ -95,6 +104,11 @@ class Layer(cocos.layer.Layer):
         else:
             self.__items.remove(item)
 
+    def remove_all_items(self):
+        for item in self.__items:
+            self.remove(item)
+
+
 
 class Sprite(cocos.sprite.Sprite):
     def __init__(self,
@@ -103,6 +117,9 @@ class Sprite(cocos.sprite.Sprite):
                  scale=1.,
                  anchor=(0, 0),
                  collision_shape="rectangle"):
+
+        if image[-4:] == '.gif':
+            image = pyglet.resource.animation(image)
 
         super().__init__(image, position=position, scale=scale, anchor=anchor)
 
@@ -124,6 +141,13 @@ class Sprite(cocos.sprite.Sprite):
 
         self.__destroy = False
         self.collision_shape = collision_shape
+
+    def change_image(self, image):
+        
+        if isinstance(image, str):
+            self.image = pyglet.resource.image(image)
+        else:
+            self.image = image
 
     def compute_center(self):
         center = self.position[0] - self.image_anchor[0], self.position[1] - self.image_anchor[1]
@@ -185,8 +209,12 @@ class Sprite(cocos.sprite.Sprite):
             elif self.collision_shape == 'rectangle':
                 self.__draw_rectangle()
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST) 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+
     def destroy(self):
         self.__destroy = True
+
 
 class AnimatedSprite(Sprite):
 
@@ -197,13 +225,14 @@ class AnimatedSprite(Sprite):
             anchor=(0, 0),
             collision_radius=None):
 
-        animation = pyglet.image.load_animation(animation)
         super().__init__(animation, position=position, scale=scale, anchor=anchor)
 
 
 class Text(Label):
 
-    def __init__(self, text, position=(0,0), anchor=None):
+    def __init__(
+            self, text, position=(0,0), font_size=12, font_name=None,
+            color=(255, 255, 255, 255), anchor=None):
         self.layer = None
         if anchor == "center":
             anchor_x = "center"
@@ -222,12 +251,25 @@ class Text(Label):
             anchor_y = "top"
         elif isinstance(anchor, (list, tuple)):
             anchor_x = anchor[0]
-            anchor_y = anchor[0]
+            anchor_y = anchor[1]
         else:
             anchor_x = "left"
             anchor_y = "bottom"
 
         x, y = position
 
+        if len(color) == 3:
+            color = color + (255,)
+
         super().__init__( text=text, x=x, y=y,
-            anchor_x=anchor_x, anchor_y=anchor_y)
+            anchor_x=anchor_x, anchor_y=anchor_y, font_size=font_size,
+            font_name=font_name, color=color)
+
+    @property
+    def text(self):
+        return self.element.text
+    
+    @text.setter
+    def text(self, value):
+        self.element.text = value
+
