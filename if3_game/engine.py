@@ -37,10 +37,11 @@ class Game(cocos.scene.Scene):
         for layer in self.__layers:
             layer.update(dt)
 
-    def add(self, layer):
-        super().add(layer)
-        self.__layers.append(layer)
-        layer.game = self
+    def add(self, *args):
+        for layer in args:
+            super().add(layer)
+            self.__layers.append(layer)
+            layer.game = self
 
     def remove_all_layers(self):
         while self.__layers:
@@ -89,13 +90,15 @@ class Layer(cocos.layer.Layer):
             for other in self.collision_manager.iter_colliding(item):
                 item.on_collision(other)
 
-    def add(self, item):
-        super().add(item)
-        if isinstance(item, Text):
-            self.__texts.append(item)
-        else:
-            self.__items.append(item)
-        item.layer = self
+    def add(self, *args):
+        
+        for item in args:
+            super().add(item)
+            if isinstance(item, Text):
+                self.__texts.append(item)
+            else:
+                self.__items.append(item)
+            item.layer = self
 
     def remove(self, item):
         super().remove(item)
@@ -107,7 +110,6 @@ class Layer(cocos.layer.Layer):
     def remove_all_items(self):
         for item in self.__items:
             self.remove(item)
-
 
 
 class Sprite(cocos.sprite.Sprite):
