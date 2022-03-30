@@ -93,11 +93,17 @@ class Layer(cocos.layer.Layer):
     def add(self, *args):
         
         for item in args:
-            super().add(item)
             if isinstance(item, Text):
+                if item in self.__texts:
+                    raise IF3GameException(f"{item} is already in the layer.")
+                    
                 self.__texts.append(item)
             else:
+                if item in self.__items:
+                    raise IF3GameException(f"{item} is already in the layer.")
+
                 self.__items.append(item)
+            super().add(item)
             item.layer = self
 
     def remove(self, item):
@@ -218,18 +224,6 @@ class Sprite(cocos.sprite.Sprite):
         self.__destroy = True
 
 
-class AnimatedSprite(Sprite):
-
-    def __init__(self,
-            animation,
-            position=(0, 0),
-            scale=1.,
-            anchor=(0, 0),
-            collision_radius=None):
-
-        super().__init__(animation, position=position, scale=scale, anchor=anchor)
-
-
 class Text(Label):
 
     def __init__(
@@ -275,3 +269,9 @@ class Text(Label):
     def text(self, value):
         self.element.text = value
 
+
+class IF3GameException(Exception):
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
