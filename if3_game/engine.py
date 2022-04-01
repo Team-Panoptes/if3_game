@@ -150,10 +150,17 @@ class Sprite(cocos.sprite.Sprite):
         self.__destroy = False
         self.collision_shape = collision_shape
 
+    @property
+    def is_destroyed():
+        return self.__destroy
+
     def change_image(self, image):
         
         if isinstance(image, str):
-            self.image = pyglet.resource.image(image)
+            if image[-4:] == '.gif':
+                self.image = pyglet.resource.animation(image)
+            else:
+                self.image = pyglet.resource.image(image)
         else:
             self.image = image
 
