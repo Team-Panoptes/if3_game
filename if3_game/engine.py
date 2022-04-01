@@ -151,7 +151,7 @@ class Sprite(cocos.sprite.Sprite):
         self.collision_shape = collision_shape
 
     @property
-    def is_destroyed():
+    def is_destroyed(self):
         return self.__destroy
 
     def change_image(self, image):
